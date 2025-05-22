@@ -1,5 +1,6 @@
 public class Cell {
-    private final String EMPTY = "\u25A1";
+    // "\u25A1"
+    private final String EMPTY = "\u25A0";
     private boolean isMine;
     private boolean isRevealed;
     private int adjacentMines;
@@ -36,10 +37,10 @@ public class Cell {
 
     @Override
     public String toString() {
-        if(!isRevealed) {
-            return EMPTY;
-        } else {
-            return isMine ? "*" : String.valueOf(adjacentMines);
-        }
+//        if(!isRevealed) {
+//            return EMPTY;
+//        } else {
+            return isMine ? "*" : String.valueOf(getAdjacentMines());
+//        }
     }
 }

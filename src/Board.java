@@ -1,12 +1,18 @@
-public class Board {
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
+public class Board {
     private final int cols;
     private final int rows;
     private final int numMines;
-    private Cell[][] grid;
+    private final int COLUMN_OFFSET = 65;
+    private final int ROW_OFFSET = 1;
+    private final Cell[][] grid;
+    private final Set<String> mineSet = new HashSet<>();
 
 
-    Board(char difficulty) {
+    public Board(char difficulty) {
         switch (difficulty) {
             case 'b':
                 this.cols = 10;
@@ -27,6 +33,7 @@ public class Board {
                 this.grid = new Cell[rows][cols];
                 break;
             default:
+                System.out.println("Invalid difficulty specified -- No soup for you!");
                 throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
         }
         createBoard();
@@ -42,18 +49,67 @@ public class Board {
 
     public void renderBoard() {
         System.out.print("   ");
-        for (char col = 'A'; col < ('A' + cols); col++) {
-            System.out.printf("%2c ", col);
+        for (char col = 0; col < cols; col++) {
+            System.out.printf("%2c ", (char) (col + COLUMN_OFFSET));
         }
         System.out.println();
 
         for (int row = 0; row < rows; row++) {
-            System.out.printf("%2d ", row);
+            System.out.printf("%2d ", row + ROW_OFFSET);
             for (int col = 0; col < cols; col++) {
                 System.out.print(" " + grid[row][col] + " ");
             }
             System.out.println();
         }
     }
-}
 
+    public void generateMines() {
+        Random rand = new Random();
+        while (mineSet.size() < numMines) {
+            int column = rand.nextInt(this.cols);
+            int row = rand.nextInt(this.rows);
+            mineSet.add(column + "," + row);
+        }
+    }
+
+    public void placeMinesInCells() {
+        for (String mine : mineSet) {
+            String[] location = mine.split(",");
+            int col = Integer.parseInt(location[0]);
+            int row = Integer.parseInt(location[1]);
+            this.grid[row][col].setMine(true);
+        }
+    }
+
+    public void fillInAdjacentCount() {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+
+                if (!grid[row][col].isMine()) {
+                    int count = 0;
+                    for (int rowCheck = -1; rowCheck <= 1; rowCheck++) {
+                        for (int colCheck = -1; colCheck <= 1; colCheck++) {
+                            if (rowCheck == 0 && colCheck == 0) {
+                                continue;
+                            }
+                            int adjRow = rowCheck + row;
+                            int adjCol = colCheck + col;
+                            if (checkBoundaries(adjRow, adjCol) && grid[adjRow][adjCol].isMine()) {
+                                count++;
+                            }
+                        }
+                    }
+                    grid[row][col].setAdjacentMines(count);
+                }
+            }
+        }
+    }
+
+    private boolean checkBoundaries(int row, int col) {
+        if (row < 0 || row >= rows || col < 0 || col >= cols) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
