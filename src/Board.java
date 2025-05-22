@@ -3,11 +3,11 @@ import java.util.Random;
 import java.util.Set;
 
 public class Board {
+    public final int COLUMN_OFFSET = 65;
+    public final int ROW_OFFSET = 1;
     private final int cols;
     private final int rows;
     private final int numMines;
-    private final int COLUMN_OFFSET = 65;
-    private final int ROW_OFFSET = 1;
     private final Cell[][] grid;
     private final Set<String> mineSet = new HashSet<>();
 
@@ -37,6 +37,18 @@ public class Board {
                 throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
         }
         createBoard();
+    }
+
+    public int getCols() {
+        return cols;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public Cell[][] getGrid() {
+        return grid;
     }
 
     private void createBoard() {
