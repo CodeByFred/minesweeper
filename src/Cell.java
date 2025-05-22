@@ -1,6 +1,11 @@
 public class Cell {
-    // "\u25A1"
-    private final String EMPTY = "\u25A0";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    private static final String ZERO_ADJACENT_MINES = "\u25A1";
+    private static final String UNPLAYED = "\u25A0";
     private boolean isMine;
     private boolean isRevealed;
     private int adjacentMines;
@@ -37,10 +42,20 @@ public class Cell {
 
     @Override
     public String toString() {
-//        if(!isRevealed) {
-//            return EMPTY;
-//        } else {
-            return isMine ? "*" : String.valueOf(getAdjacentMines());
-//        }
+        if (!isRevealed) {
+            return UNPLAYED;
+        }
+
+        if (isMine) {
+            return ANSI_YELLOW + "*" + ANSI_RESET;
+        }
+
+        int count = getAdjacentMines();
+        return switch (count) {
+            case 0 -> ZERO_ADJACENT_MINES;
+            case 1 -> ANSI_BLUE + String.valueOf(count) + ANSI_RESET;
+            case 2 -> ANSI_GREEN + String.valueOf(count) + ANSI_RESET;
+            default -> ANSI_RED + String.valueOf(count) + ANSI_RESET;
+        };
     }
 }
