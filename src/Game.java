@@ -8,6 +8,7 @@ public class Game {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to MineSweeper!");
         System.out.println("Pick your difficulty: B: Beginner, I: Intermediate, E: Expert, Q: Quit");
+
         String difficulty = scanner.nextLine().toUpperCase();
         if (difficulty.equals("Q")) {
             return;
@@ -15,37 +16,36 @@ public class Game {
         if (!(difficulty.equals("B") || difficulty.equals("I") || difficulty.equals("E"))) {
             runApp();
         }
+
         Board board = new Board(difficulty);
-        board.generateMines();
-        board.placeMinesInCells();
-        board.fillInAdjacentCount();
-        board.renderBoard();
+        initializeBoard(board);
+
         System.out.print("Enter a letter for column and number for row (Example - A5): ");
+
         while (!isOver) {
             String guess = scanner.nextLine();
             move = playerMoveValidator(board, guess);
             if (move != null) {
                 checkMove(board, move);
-            clearTerminal();
-            board.renderBoard();
-            if(board.revealedCells() == 0) {
-                System.out.println("Congratulations! You won!");
-                isOver = true;
-            }
+                clearTerminal();
+                board.renderBoard();
+                if (board.revealedCells() == 0) {
+                    System.out.println("Congratulations! You won!");
+                    isOver = true;
+                }
             }
             if (!isOver) {
                 System.out.print("You've survived, enter another cell: ");
             }
         }
-        System.out.print("Would you like to play again? (Y/N) :");
-        String input = String.valueOf(scanner.next().charAt(0)).toUpperCase();
-        scanner.nextLine();
-        if (input.equals("Y")) {
-            isOver = false;
-            runApp();
-        } else {
-            scanner.close();
-        }
+        endOfGameOptions(scanner);
+    }
+
+    private void initializeBoard(Board board) {
+        board.generateMines();
+        board.placeMinesInCells();
+        board.fillInAdjacentCount();
+        board.renderBoard();
     }
 
     private void clearTerminal() {
@@ -64,7 +64,7 @@ public class Game {
         }
 
         char column = playerMove.charAt(0);
-        if (column < 'A' || column > board.COLUMN_OFFSET + board.getCols()) {
+        if (column < 'A' || column >= ('A' + board.getCols())) {
             System.out.println("You can't play out of bounds!");
             return null;
         } else {
@@ -96,9 +96,19 @@ public class Game {
             b.getGrid()[coordinate[0]][coordinate[1]].reveal();
             if (b.getGrid()[coordinate[0]][coordinate[1]].getAdjacentMines() == 0) {
                 b.cascadeReveal(coordinate);
-
             }
         }
     }
 
+    private void endOfGameOptions(Scanner sc) {
+        System.out.print("Would you like to play again? (Y/N):");
+        String input = String.valueOf(sc.next().charAt(0)).toUpperCase();
+        sc.nextLine();
+        if (input.equals("Y")) {
+            isOver = false;
+            runApp();
+        } else {
+            sc.close();
+        }
+    }
 }

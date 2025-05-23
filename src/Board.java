@@ -11,7 +11,6 @@ public class Board {
     private final Cell[][] grid;
     private final Set<String> mineSet = new HashSet<>();
 
-
     public Board(String difficulty) {
         switch (difficulty) {
             case "B":
@@ -35,7 +34,6 @@ public class Board {
             default:
                 throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
                 }
-
         createBoard();
     }
 

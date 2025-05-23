@@ -6,6 +6,7 @@ public class Cell {
     public static final String ANSI_RESET = "\u001B[0m";
     private static final String ZERO_ADJACENT_MINES = "\u25A1";
     private static final String UNPLAYED = "\u25A0";
+    private static final String MINE = "*";
     private boolean isMine;
     private boolean isRevealed;
     private int adjacentMines;
@@ -47,7 +48,7 @@ public class Cell {
         }
 
         if (isMine) {
-            return ANSI_YELLOW + "*" + ANSI_RESET;
+            return ANSI_YELLOW + MINE + ANSI_RESET;
         }
 
         int count = getAdjacentMines();
