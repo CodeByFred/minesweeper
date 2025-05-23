@@ -12,30 +12,30 @@ public class Board {
     private final Set<String> mineSet = new HashSet<>();
 
 
-    public Board(char difficulty) {
+    public Board(String difficulty) {
         switch (difficulty) {
-            case 'b':
+            case "B":
                 this.cols = 10;
                 this.rows = 10;
                 this.numMines = 10;
                 this.grid = new Cell[rows][cols];
                 break;
-            case 'i':
+            case "I":
                 this.cols = 16;
                 this.rows = 16;
                 this.numMines = 40;
                 this.grid = new Cell[rows][cols];
                 break;
-            case 'e':
+            case "E":
                 this.cols = 26;
                 this.rows = 20;
                 this.numMines = 99;
                 this.grid = new Cell[rows][cols];
                 break;
             default:
-                System.out.println("Invalid difficulty specified -- No soup for you!");
                 throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
-        }
+                }
+
         createBoard();
     }
 
@@ -118,10 +118,52 @@ public class Board {
     }
 
     private boolean checkBoundaries(int row, int col) {
-        if (row < 0 || row >= rows || col < 0 || col >= cols) {
+        if(row < 0 || row >= rows || col < 0 || col >= cols) {
             return false;
         } else {
             return true;
         }
+    }
+
+    public void revealAllCells() {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                this.grid[row][col].reveal();
+            }
+        }
+    }
+
+    public void cascadeReveal(int[] coord) {
+
+
+        int row = coord[0];
+        int col = coord[1];
+        if (grid[row][col].getAdjacentMines() == 0) {
+            for (int rowCheck = -1; rowCheck <= 1; rowCheck++) {
+                for (int colCheck = -1; colCheck <= 1; colCheck++) {
+                    if (rowCheck == 0 && colCheck == 0) {
+                        continue;
+                    }
+                    int adjRow = rowCheck + row;
+                    int adjCol = colCheck + col;
+                    if (checkBoundaries(adjRow, adjCol) && grid[adjRow][adjCol].getAdjacentMines() == 0) {
+                        this.grid[adjRow][adjCol].reveal();
+                    }
+                }
+            }
+        }
+    }
+
+    public int revealedCells() {
+        int totalNonMineCells = this.cols * this.rows - this.numMines;
+        int count = 0;
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if(this.grid[row][col].isRevealed()){
+                    count++;
+                }
+            }
+        }
+        return totalNonMineCells - count;
     }
 }

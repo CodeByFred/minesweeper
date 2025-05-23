@@ -2,28 +2,57 @@ import java.util.Scanner;
 
 public class Game {
     private boolean isOver = false;
+    int[] move = null;
 
-
-    public void runApp(Scanner scanner) {
-        System.out.println("Welcome to the game!");
-        System.out.println("Pick your difficulty: b: Beginner, i: Intermediate, e: Expert");
-        char difficulty = scanner.next().charAt(0);
-        scanner.nextLine();
+    public void runApp() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Welcome to MineSweeper!");
+        System.out.println("Pick your difficulty: B: Beginner, I: Intermediate, E: Expert, Q: Quit");
+        String difficulty = scanner.nextLine().toUpperCase();
+        if (difficulty.equals("Q")) {
+            return;
+        }
+        if (!(difficulty.equals("B") || difficulty.equals("I") || difficulty.equals("E"))) {
+            runApp();
+        }
         Board board = new Board(difficulty);
         board.generateMines();
         board.placeMinesInCells();
         board.fillInAdjacentCount();
         board.renderBoard();
-        System.out.println("Enter letter for column and number for row: ('A5' or 'D7)");
+        System.out.print("Enter a letter for column and number for row (Example - A5): ");
         while (!isOver) {
             String guess = scanner.nextLine();
-            int[] move = playerMoveValidator(board, guess);
-            checkMove(board, move);
+            move = playerMoveValidator(board, guess);
+            if (move != null) {
+                checkMove(board, move);
+            clearTerminal();
             board.renderBoard();
+            if(board.revealedCells() == 0) {
+                System.out.println("Congratulations! You won!");
+                isOver = true;
+            }
+            }
+            if (!isOver) {
+                System.out.print("You've survived, enter another cell: ");
+            }
+        }
+        System.out.print("Would you like to play again? (Y/N) :");
+        String input = String.valueOf(scanner.next().charAt(0)).toUpperCase();
+        scanner.nextLine();
+        if (input.equals("Y")) {
+            isOver = false;
+            runApp();
+        } else {
+            scanner.close();
         }
     }
 
-
+    private void clearTerminal() {
+        for (int i = 0; i < 50; i++) {
+            System.out.println();
+        }
+    }
 
     private int[] playerMoveValidator(Board board, String move) {
         int c = 0;
@@ -37,28 +66,39 @@ public class Game {
         char column = playerMove.charAt(0);
         if (column < 'A' || column > board.COLUMN_OFFSET + board.getCols()) {
             System.out.println("You can't play out of bounds!");
+            return null;
         } else {
             c = column - 'A';
-            System.out.println(c);
         }
 
-        int row = Integer.parseInt(playerMove.substring(1));
-        if (row < 1 || row > board.ROW_OFFSET + board.getRows()) {
-            System.out.println("Errr... You know that's not a valid row... Right?");
-        } else {
-            r = row - board.ROW_OFFSET;
-            System.out.println(r);
+        try {
+            int row = Integer.parseInt(playerMove.substring(1));
+            if (row < 1 || row > board.ROW_OFFSET + board.getRows()) {
+                System.out.println("Errr... You know that's not a valid row... Right?");
+                return null;
+            } else {
+                r = row - board.ROW_OFFSET;
+
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid move, wise guy!");
         }
-        return new int[]{r, c};
+            return new int[]{r, c};
+
     }
 
     private void checkMove(Board b, int[] coordinate) {
-        System.out.println(coordinate[0] + " " + coordinate[1]);
         if (b.getGrid()[coordinate[0]][coordinate[1]].isMine()) {
             System.out.println("BOOM! YOU LOST!");
+            b.revealAllCells();
             isOver = true;
         } else {
             b.getGrid()[coordinate[0]][coordinate[1]].reveal();
+            if (b.getGrid()[coordinate[0]][coordinate[1]].getAdjacentMines() == 0) {
+                b.cascadeReveal(coordinate);
+
+            }
         }
     }
+
 }
