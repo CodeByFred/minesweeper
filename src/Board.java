@@ -1,6 +1,4 @@
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class Board {
     public final int COLUMN_OFFSET = 65;
@@ -9,7 +7,7 @@ public class Board {
     private final int rows;
     private final int numMines;
     private final Cell[][] grid;
-    private final Set<String> mineSet = new HashSet<>();
+    private final Set<Coordinate> mineSet = new HashSet<>();
 
     public Board(String difficulty) {
         switch (difficulty) {
@@ -33,7 +31,7 @@ public class Board {
                 break;
             default:
                 throw new IllegalArgumentException("Invalid difficulty: " + difficulty);
-                }
+        }
         createBoard();
     }
 
@@ -73,21 +71,20 @@ public class Board {
         }
     }
 
+    // Using overloaded Constructor to create a mine location
     public void generateMines() {
         Random rand = new Random();
         while (mineSet.size() < numMines) {
-            int column = rand.nextInt(this.cols);
             int row = rand.nextInt(this.rows);
-            mineSet.add(column + "," + row);
+            int column = rand.nextInt(this.cols);
+            mineSet.add(new Coordinate(column, row));
         }
     }
 
+    // 2D is array is set up so row is first value and column is second
     public void placeMinesInCells() {
-        for (String mine : mineSet) {
-            String[] location = mine.split(",");
-            int col = Integer.parseInt(location[0]);
-            int row = Integer.parseInt(location[1]);
-            this.grid[row][col].setMine(true);
+        for (Coordinate mine : mineSet) {
+            this.grid[mine.getRow()][mine.getCol()].setMine(true);
         }
     }
 
@@ -116,7 +113,7 @@ public class Board {
     }
 
     private boolean checkBoundaries(int row, int col) {
-        if(row < 0 || row >= rows || col < 0 || col >= cols) {
+        if (row < 0 || row >= rows || col < 0 || col >= cols) {
             return false;
         } else {
             return true;
@@ -131,37 +128,66 @@ public class Board {
         }
     }
 
-    public void cascadeReveal(int[] coord) {
-
-
-        int row = coord[0];
-        int col = coord[1];
-        if (grid[row][col].getAdjacentMines() == 0) {
-            for (int rowCheck = -1; rowCheck <= 1; rowCheck++) {
-                for (int colCheck = -1; colCheck <= 1; colCheck++) {
-                    if (rowCheck == 0 && colCheck == 0) {
-                        continue;
-                    }
-                    int adjRow = rowCheck + row;
-                    int adjCol = colCheck + col;
-                    if (checkBoundaries(adjRow, adjCol) && grid[adjRow][adjCol].getAdjacentMines() == 0) {
-                        this.grid[adjRow][adjCol].reveal();
-                    }
-                }
-            }
-        }
-    }
-
     public int revealedCells() {
         int totalNonMineCells = this.cols * this.rows - this.numMines;
         int count = 0;
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                if(this.grid[row][col].isRevealed()){
+                if (this.grid[row][col].isRevealed()) {
                     count++;
                 }
             }
         }
         return totalNonMineCells - count;
+    }
+
+    // We have a coordinate that we know has 0 adjacent mines
+    // We need to check the values of its neighbours
+    // If neighbor has > 0 adjacent mines then just reveal that Cell
+    // If neighbour is 0 reveal it AND check its neighbours as well
+    // Using a set to avoid an infinite loop
+    public void cascadeReveal(Coordinate startCoord) {
+        Queue<Coordinate> queue = new LinkedList<>();
+        Set<Coordinate> visited = new HashSet<>();
+
+        queue.add(startCoord);
+
+        while (!queue.isEmpty()) {
+            Coordinate current = queue.poll();
+
+            if (visited.contains(current)) {
+                continue;
+            }
+            visited.add(current);
+
+            for (int rowCheck = -1; rowCheck <= 1; rowCheck++) {
+                for (int colCheck = -1; colCheck <= 1; colCheck++) {
+                    if (rowCheck == 0 && colCheck == 0) {
+                        continue;
+                    }
+
+                    int adjRow = rowCheck + current.getRow();
+                    int adjCol = colCheck + current.getCol();
+
+                    if (!checkBoundaries(adjRow, adjCol)) {
+                        continue;
+                    }
+
+                    Coordinate neighborCoord = new Coordinate(adjRow, adjCol);
+                    Cell neighbor = grid[adjRow][adjCol];
+
+                    if (neighbor.isRevealed() || visited.contains(neighborCoord)) {
+                        continue;
+                    }
+
+                    if (neighbor.getAdjacentMines() == 0) {
+                        neighbor.reveal();
+                        queue.add(neighborCoord);
+                    } else {
+                        neighbor.reveal();
+                    }
+                }
+            }
+        }
     }
 }
