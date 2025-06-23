@@ -84,7 +84,6 @@ public class Board {
     // 2D is array is set up so row is first value and column is second
     public void placeMinesInCells() {
         for (Coordinate mine : mineSet) {
-            System.out.println(mine.toString());
             this.grid[mine.getRow()][mine.getCol()].setMine(true);
         }
     }
