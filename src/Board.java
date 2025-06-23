@@ -77,13 +77,14 @@ public class Board {
         while (mineSet.size() < numMines) {
             int row = rand.nextInt(this.rows);
             int column = rand.nextInt(this.cols);
-            mineSet.add(new Coordinate(column, row));
+            mineSet.add(new Coordinate(row, column));
         }
     }
 
     // 2D is array is set up so row is first value and column is second
     public void placeMinesInCells() {
         for (Coordinate mine : mineSet) {
+            System.out.println(mine.toString());
             this.grid[mine.getRow()][mine.getCol()].setMine(true);
         }
     }
